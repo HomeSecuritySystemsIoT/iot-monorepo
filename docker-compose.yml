@@ -1,0 +1,71 @@
+services:
+  frontend:
+    build:
+      context: ./frontend-iot
+      dockerfile: Dockerfile
+      target: runner
+      args:
+        NEXT_PUBLIC_FRONTEND_URL: ${NEXT_PUBLIC_FRONTEND_URL}
+        NEXT_PUBLIC_BACKEND_WS_URL: ${NEXT_PUBLIC_BACKEND_WS_URL}
+    restart: always
+    ports:
+      - "3000:3000"
+    env_file: .env
+    environment:
+      DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  migrate:
+    build:
+      context: ./frontend-iot
+      dockerfile: Dockerfile
+      target: builder
+    env_file: .env
+    environment:
+      DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}"
+    command: npx drizzle-kit push --force
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  backend:
+    build:
+      context: ./backend-iot
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "7890:7890"
+      - "7891:7891"
+      - "7892:7892/udp"
+      - "7893:7893"
+    env_file: .env
+    environment:
+      # frontend is reachable inside Docker by service name — no public IP needed
+      FRONTEND_URL: "http://frontend:3000"
+    volumes:
+      - ./backend-iot/images_received:/app/images_received
+      - ./backend-iot/logs:/app/logs
+      - ./backend-iot/certs:/app/certs:ro
+    depends_on:
+      - frontend
+
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - "${POSTGRES_PORT:-5433}:5432"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
