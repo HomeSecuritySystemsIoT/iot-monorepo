@@ -1,0 +1,7 @@
+{
+  "name": "iot-monorepo",
+  "private": true,
+  "scripts": {
+    "update": "git submodule update --remote --merge"
+  }
+}
