@@ -2,6 +2,7 @@
   "name": "iot-monorepo",
   "private": true,
   "scripts": {
-    "update": "git submodule update --remote --merge"
+    "update": "git submodule update --remote --merge",
+    "rebuild-deploy": "npm run update && docker compose down && docker compose up -d --build"
   }
 }
