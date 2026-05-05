@@ -14,6 +14,7 @@ services:
     environment:
       DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}"
       SECURE_COOKIES: "${SECURE_COOKIES:-false}"
+      BACKEND_INTERNAL_URL: "http://backend:7890"
     depends_on:
       migrate:
         condition: service_completed_successfully
