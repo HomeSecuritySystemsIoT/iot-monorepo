@@ -5,8 +5,8 @@ services:
       dockerfile: Dockerfile
       target: runner
       args:
-        NEXT_PUBLIC_FRONTEND_URL: ${NEXT_PUBLIC_FRONTEND_URL}
-        NEXT_PUBLIC_BACKEND_WS_URL: ${NEXT_PUBLIC_BACKEND_WS_URL}
+        NEXT_PUBLIC_FRONTEND_URL: "http://${SERVER_HOST}:3000"
+        NEXT_PUBLIC_BACKEND_WS_URL: "ws://${SERVER_HOST}:7890"
     restart: always
     ports:
       - "3000:3000"
