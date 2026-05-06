@@ -1,19 +1,34 @@
 services:
+  caddy:
+    image: caddy:2-alpine
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      SERVER_HOST: "${SERVER_HOST}"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - frontend
+      - backend
+
   frontend:
     build:
       context: ./frontend-iot
       dockerfile: Dockerfile
       target: runner
       args:
-        NEXT_PUBLIC_FRONTEND_URL: "http://${SERVER_HOST}:3000"
-        NEXT_PUBLIC_BACKEND_WS_URL: "ws://${SERVER_HOST}:7890"
+        NEXT_PUBLIC_FRONTEND_URL: "https://${SERVER_HOST}"
+        NEXT_PUBLIC_BACKEND_WS_URL: "wss://${SERVER_HOST}/backend"
     restart: always
-    ports:
-      - "3000:3000"
     env_file: .env
     environment:
       DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}"
-      SECURE_COOKIES: "${SECURE_COOKIES:-false}"
+      SECURE_COOKIES: "${SECURE_COOKIES:-true}"
       BACKEND_INTERNAL_URL: "http://backend:7890"
     depends_on:
       migrate:
@@ -38,13 +53,11 @@ services:
       dockerfile: Dockerfile
     restart: always
     ports:
-      - "7890:7890"
       - "7891:7891"
       - "7892:7892/udp"
       - "7893:7893"
     env_file: .env
     environment:
-      # frontend is reachable inside Docker by service name — no public IP needed
       FRONTEND_URL: "http://frontend:3000"
     volumes:
       - ./backend-iot/images_received:/app/images_received
@@ -71,3 +84,5 @@ services:
 
 volumes:
   postgres_data:
+  caddy_data:
+  caddy_config:

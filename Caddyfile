@@ -1,0 +1,8 @@
+{$SERVER_HOST} {
+	handle_path /backend* {
+		reverse_proxy backend:7890
+	}
+	handle {
+		reverse_proxy frontend:3000
+	}
+}
