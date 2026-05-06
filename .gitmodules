@@ -1,7 +1,7 @@
 [submodule "frontend-iot"]
 	path = frontend-iot
 	url = https://github.com/HomeSecuritySystemsIoT/application.git
-	branch = claim_token
+	branch = prepare_to_https
 
 [submodule "backend-iot"]
 	path = backend-iot
