@@ -1,8 +1,8 @@
-{$SERVER_HOST} {
+iot-project.ethan-rouimi.com {
 	handle_path /backend* {
-		reverse_proxy backend:7890
+		reverse_proxy localhost:7890
 	}
 	handle {
-		reverse_proxy frontend:3000
+		reverse_proxy localhost:3000
 	}
 }
